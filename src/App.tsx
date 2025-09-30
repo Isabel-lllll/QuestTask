@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import Tasks from "./pages/Tasks";
 import Achievements from "./pages/Achievements";
@@ -15,15 +17,39 @@ const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  
-  if (loading) {
+  const [verifying, setVerifying] = useState(false);
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (user) {
+      setAllowed(true);
+      setVerifying(false);
+      return;
+    }
+
+    // User is null: double-check session after a brief delay to avoid redirects during token refresh
+    setVerifying(true);
+    setAllowed(null);
+    const t = setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setAllowed(!!session?.user);
+        setVerifying(false);
+      });
+    }, 350);
+
+    return () => clearTimeout(t);
+  }, [user, loading]);
+
+  if (loading || verifying || allowed === null) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-  
-  if (!user) {
+
+  if (!allowed) {
     return <Navigate to="/auth" replace />;
   }
-  
+
   return <>{children}</>;
 };
 

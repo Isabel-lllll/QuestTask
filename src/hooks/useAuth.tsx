@@ -27,7 +27,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (event, session) => {
         console.debug('[auth] onAuthStateChange', { event, hasSession: !!session });
         setSession(session);
-        setUser(session?.user ?? null);
+        if (event === 'SIGNED_OUT' || !session) {
+          setUser(null);
+        } else {
+          setUser(session.user);
+        }
       }
     );
 
