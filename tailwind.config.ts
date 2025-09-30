@@ -39,6 +39,10 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -47,16 +51,20 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
+      },
+      boxShadow: {
+        'glow-blue': '0 0 20px hsl(228 94% 61% / 0.5)',
+        'glow-gold': '0 0 20px hsl(45 92% 62% / 0.5)',
+        'glow-purple': '0 0 20px hsl(265 58% 62% / 0.5)',
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(135deg, hsl(275 80% 15%), hsl(265 70% 25%))',
+        'gradient-card': 'linear-gradient(135deg, hsl(265 70% 60%), hsl(228 94% 61%))',
+        'gradient-progress': 'linear-gradient(90deg, hsl(45 92% 62%), hsl(35 92% 55%))',
+      },
+      fontFamily: {
+        'serif': ['Playfair Display', 'Georgia', 'serif'],
+        'sans': ['Inter', 'Open Sans', '-apple-system', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
