@@ -22,19 +22,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST and only end loading after it fires
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.debug('[auth] onAuthStateChange', { event, hasSession: !!session });
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
       }
     );
 
-    // Prime state with any existing session without flipping loading prematurely
+    // Prime state with any existing session and end initial loading
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.debug('[auth] getSession (init)', { hasSession: !!session });
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
