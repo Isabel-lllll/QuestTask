@@ -22,26 +22,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.debug('[auth] onAuthStateChange', { event, hasSession: !!session });
-        setSession(session);
-        if (event === 'SIGNED_OUT' || !session) {
-          setUser(null);
-        } else {
-          setUser(session.user);
-        }
-      }
-    );
-
-    // Prime state with any existing session and end initial loading
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.debug('[auth] getSession (init)', { hasSession: !!session });
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
