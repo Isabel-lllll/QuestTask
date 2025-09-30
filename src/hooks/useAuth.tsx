@@ -22,6 +22,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check for existing session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -30,13 +37,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -57,7 +57,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     if (!error) {
       toast.success("Account created successfully!");
-      navigate("/");
     }
     
     return { error };
@@ -71,7 +70,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     if (!error) {
       toast.success("Welcome back!");
-      navigate("/");
     }
     
     return { error };
