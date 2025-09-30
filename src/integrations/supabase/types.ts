@@ -14,7 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_accessories: string | null
+          avatar_accessory_color: string | null
+          avatar_clothing: string | null
+          avatar_clothing_color: string | null
+          avatar_face_shape: string | null
+          avatar_hair_color: string | null
+          avatar_hairstyle: string | null
+          avatar_skin_tone: string | null
+          avatar_type: string | null
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          avatar_accessories?: string | null
+          avatar_accessory_color?: string | null
+          avatar_clothing?: string | null
+          avatar_clothing_color?: string | null
+          avatar_face_shape?: string | null
+          avatar_hair_color?: string | null
+          avatar_hairstyle?: string | null
+          avatar_skin_tone?: string | null
+          avatar_type?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          id: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          avatar_accessories?: string | null
+          avatar_accessory_color?: string | null
+          avatar_clothing?: string | null
+          avatar_clothing_color?: string | null
+          avatar_face_shape?: string | null
+          avatar_hair_color?: string | null
+          avatar_hairstyle?: string | null
+          avatar_skin_tone?: string | null
+          avatar_type?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          xp_reward: number | null
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          xp_reward?: number | null
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          xp_reward?: number | null
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_task_date: string | null
+          level: number | null
+          longest_streak: number | null
+          streak: number | null
+          tasks_completed: number | null
+          updated_at: string | null
+          user_id: string
+          xp: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_task_date?: string | null
+          level?: number | null
+          longest_streak?: number | null
+          streak?: number | null
+          tasks_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+          xp?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_task_date?: string | null
+          level?: number | null
+          longest_streak?: number | null
+          streak?: number | null
+          tasks_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
