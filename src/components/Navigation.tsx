@@ -8,6 +8,7 @@ export const Navigation = () => {
   const navItems = [
     { path: "/", icon: CheckSquare, label: "Tasks" },
     { path: "/achievements", icon: Award, label: "Achievements" },
+    { path: "/community", icon: Award, label: "Community" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
   

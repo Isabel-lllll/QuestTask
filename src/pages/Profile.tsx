@@ -1,30 +1,129 @@
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
+import { AvatarCustomizer } from "@/components/AvatarCustomizer";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { User, Trophy, Flame, CheckCircle, Zap, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Trophy, Flame, CheckCircle, Zap, AlertTriangle, LogOut, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
-  const userStats = {
+  const { user, signOut } = useAuth();
+  const [userProgress, setUserProgress] = useState({
     level: 1,
-    title: "Quester",
-    xp: 40,
-    achievements: 1,
-    totalAchievements: 8,
+    xp: 0,
     streak: 0,
-    longestStreak: 0,
-    tasksCompleted: 2,
-    tasksToday: 2,
-    totalXP: 40,
+    longest_streak: 0,
+    tasks_completed: 0,
+  });
+  const [profile, setProfile] = useState({
+    username: "",
+    avatar_type: "upload" as "upload" | "custom",
+  });
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchProgress();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user?.id)
+      .single();
+
+    if (data && !error) {
+      setProfile({
+        username: data.username || "",
+        avatar_type: (data.avatar_type as "upload" | "custom") || "upload",
+      });
+    }
+    setLoading(false);
   };
 
-  const handleResetProgress = () => {
-    toast.error("This will permanently delete all of your tasks, progress, and achievements. This action cannot be undone.", {
-      duration: 5000,
-    });
+  const fetchProgress = async () => {
+    const { data, error } = await supabase
+      .from("user_progress")
+      .select("*")
+      .eq("user_id", user?.id)
+      .single();
+
+    if (data && !error) {
+      setUserProgress(data);
+    }
   };
 
-  const levelProgress = (userStats.xp / 100) * 100;
+  const handleResetProgress = async () => {
+    const { error: tasksError } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("user_id", user?.id);
+
+    const { error: progressError } = await supabase
+      .from("user_progress")
+      .update({
+        level: 1,
+        xp: 0,
+        streak: 0,
+        longest_streak: 0,
+        tasks_completed: 0,
+      })
+      .eq("user_id", user?.id);
+
+    if (!tasksError && !progressError) {
+      setUserProgress({
+        level: 1,
+        xp: 0,
+        streak: 0,
+        longest_streak: 0,
+        tasks_completed: 0,
+      });
+      toast.success("Progress reset successfully");
+      setShowResetDialog(false);
+    } else {
+      toast.error("Failed to reset progress");
+    }
+  };
+
+  const handleSaveAvatar = async (options: any) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        avatar_type: "custom",
+        avatar_hairstyle: options.hairstyle,
+        avatar_clothing: options.clothing,
+        avatar_face_shape: options.faceShape,
+        avatar_skin_tone: options.skinTone,
+        avatar_accessories: options.accessories,
+        avatar_hair_color: options.hairColor,
+        avatar_clothing_color: options.clothingColor,
+        avatar_accessory_color: options.accessoryColor,
+      })
+      .eq("id", user?.id);
+
+    if (!error) {
+      toast.success("Avatar customized successfully!");
+      setShowAvatarDialog(false);
+      setProfile({ ...profile, avatar_type: "custom" });
+    } else {
+      toast.error("Failed to save avatar");
+    }
+  };
+
+  const levelProgress = (userProgress.xp % 100);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen">
@@ -33,23 +132,31 @@ const Profile = () => {
       <div className="container mx-auto px-4 py-6 max-w-2xl">
         {/* Profile Header */}
         <div className="bg-gradient-card rounded-xl p-8 mb-6 shadow-glow-purple text-center">
-          <div className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold">
+          <div 
+            className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold cursor-pointer"
+            onClick={() => setShowAvatarDialog(true)}
+          >
             <User className="w-12 h-12 text-white" />
           </div>
+          <Button variant="outline" size="sm" onClick={() => setShowAvatarDialog(true)} className="mb-4 text-[#0047AB]">
+            <Upload className="w-4 h-4 mr-2" />
+            Customize Avatar
+          </Button>
+          
           <h1 className="font-serif text-3xl font-bold text-white mb-2">
-            Level {userStats.level} {userStats.title}
+            {profile.username}
           </h1>
           <p className="text-white/80 mb-4">
-            {userStats.xp} XP earned • {userStats.achievements} achievements unlocked
+            Level {userProgress.level} • {userProgress.xp} XP earned
           </p>
           
           <div className="max-w-md mx-auto">
             <div className="flex justify-between text-sm text-white/70 mb-2">
               <span>Level Progress</span>
-              <span>{levelProgress.toFixed(0)}%</span>
+              <span>{levelProgress}%</span>
             </div>
-            <Progress value={levelProgress} className="h-2 bg-white/20" />
-            <p className="text-xs text-white/60 mt-2">{userStats.xp}/100 XP to next level</p>
+            <Progress value={levelProgress} className="h-2" />
+            <p className="text-xs text-white/60 mt-2">{levelProgress}/100 XP to next level</p>
           </div>
         </div>
 
@@ -60,7 +167,7 @@ const Profile = () => {
               <div className="w-10 h-10 bg-success rounded-lg flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
-              <div className="text-2xl font-bold text-card-foreground">{userStats.tasksCompleted}</div>
+              <div className="text-2xl font-bold text-card-foreground">{userProgress.tasks_completed}</div>
             </div>
             <p className="text-sm text-muted-foreground">Tasks Completed</p>
           </div>
@@ -70,112 +177,32 @@ const Profile = () => {
               <div className="w-10 h-10 bg-destructive rounded-lg flex items-center justify-center">
                 <Flame className="w-5 h-5 text-white" />
               </div>
-              <div className="text-2xl font-bold text-card-foreground">{userStats.longestStreak}</div>
+              <div className="text-2xl font-bold text-card-foreground">{userProgress.longest_streak}</div>
             </div>
             <p className="text-sm text-muted-foreground">Longest Streak</p>
           </div>
         </div>
 
-        {/* Your Statistics */}
-        <div className="bg-card rounded-xl p-6 shadow-lg mb-6">
-          <h2 className="font-serif text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Your Statistics
-          </h2>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Trophy className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-medium text-card-foreground">Achievements Unlocked</span>
-              </div>
-              <span className="text-sm font-bold text-primary">
-                {userStats.achievements}/{userStats.totalAchievements}
-              </span>
-            </div>
+        {/* Actions */}
+        <div className="space-y-3 mb-6">
+          <Button 
+            variant="outline" 
+            className="w-full text-[#0047AB]"
+            onClick={() => window.location.href = '/achievements'}
+          >
+            <Trophy className="w-4 h-4 mr-2" />
+            View All Achievements
+          </Button>
 
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-success rounded-lg flex items-center justify-center">
-                  <Flame className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-medium text-card-foreground">Current Streak</span>
-              </div>
-              <span className="text-sm font-bold text-destructive">
-                {userStats.streak} days
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-success rounded-lg flex items-center justify-center">
-                  <Trophy className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-medium text-card-foreground">Achievements Unlocked</span>
-              </div>
-              <span className="text-sm font-bold text-primary">
-                {userStats.achievements}/{userStats.totalAchievements}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-success rounded-lg flex items-center justify-center">
-                  <Flame className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-medium text-card-foreground">Current Streak</span>
-              </div>
-              <span className="text-sm font-bold text-destructive">
-                {userStats.streak} days
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-medium text-card-foreground">Tasks Completed Today</span>
-              </div>
-              <span className="text-sm font-bold text-card-foreground">{userStats.tasksToday}</span>
-            </div>
-
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-medium text-card-foreground">Total Experience</span>
-              </div>
-              <span className="text-sm font-bold text-accent">{userStats.totalXP} XP</span>
-            </div>
-          </div>
+          <Button 
+            variant="outline" 
+            className="w-full text-[#0047AB]"
+            onClick={signOut}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Log Out
+          </Button>
         </div>
-
-        {/* Recent Achievements */}
-        <div className="bg-card rounded-xl p-6 shadow-lg mb-6">
-          <h2 className="font-serif text-xl font-bold text-card-foreground mb-4">Recent Achievements</h2>
-          <div className="bg-gradient-card rounded-lg p-4 flex items-center gap-3 shadow-glow-blue">
-            <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
-              <Trophy className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">First Steps</h3>
-              <p className="text-xs text-white/70">Complete your first task</p>
-            </div>
-          </div>
-        </div>
-
-        <Button 
-          variant="outline" 
-          className="w-full mb-4"
-          onClick={() => window.location.href = '/achievements'}
-        >
-          <Trophy className="w-4 h-4 mr-2" />
-          View All Achievements
-        </Button>
 
         {/* Danger Zone */}
         <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-6">
@@ -183,7 +210,7 @@ const Profile = () => {
             <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-destructive mb-1">Danger Zone</h3>
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-card-foreground/80">
                 This will permanently delete all of your tasks, progress, and achievements. This action cannot be undone.
               </p>
             </div>
@@ -191,12 +218,66 @@ const Profile = () => {
           <Button 
             variant="destructive" 
             className="w-full"
-            onClick={handleResetProgress}
+            onClick={() => setShowResetDialog(true)}
           >
             Reset All Progress
           </Button>
         </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to reset all your progress?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete all of your tasks, progress, and achievements. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowResetDialog(false)}
+              className="flex-1 text-[#0047AB]"
+            >
+              No
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleResetProgress}
+              className="flex-1"
+            >
+              Yes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Avatar Customization Dialog */}
+      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Customize Your Avatar</DialogTitle>
+          </DialogHeader>
+          <Tabs defaultValue="custom" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">Upload Picture</TabsTrigger>
+              <TabsTrigger value="custom">Customize Avatar</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload" className="space-y-4">
+              <div className="text-center p-8">
+                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground mb-4">
+                  Upload a profile picture (coming soon)
+                </p>
+              </div>
+            </TabsContent>
+            <TabsContent value="custom">
+              <AvatarCustomizer onSave={handleSaveAvatar} />
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
