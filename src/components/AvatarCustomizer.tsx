@@ -62,7 +62,6 @@ export const AvatarCustomizer = ({ onSave, initialOptions = {} }: AvatarCustomiz
             variant={selected === item ? "default" : "outline"}
             size="sm"
             onClick={() => onSelect(item)}
-            className={selected !== item ? "text-[#0047AB]" : ""}
           >
             {item}
           </Button>

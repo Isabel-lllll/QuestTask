@@ -43,6 +43,14 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        "royal-blue": {
+          DEFAULT: "hsl(var(--royal-blue))",
+          foreground: "hsl(var(--royal-blue-foreground))",
+        },
+        "progress-purple": {
+          DEFAULT: "hsl(var(--progress-purple))",
+          foreground: "hsl(var(--progress-purple-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

@@ -136,9 +136,9 @@ const Profile = () => {
             className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold cursor-pointer"
             onClick={() => setShowAvatarDialog(true)}
           >
-            <User className="w-12 h-12 text-white" />
+            <User className="w-12 h-12 text-accent-foreground" />
           </div>
-          <Button variant="outline" size="sm" onClick={() => setShowAvatarDialog(true)} className="mb-4 text-[#0047AB]">
+          <Button variant="outline" size="sm" onClick={() => setShowAvatarDialog(true)} className="mb-4">
             <Upload className="w-4 h-4 mr-2" />
             Customize Avatar
           </Button>
@@ -187,7 +187,7 @@ const Profile = () => {
         <div className="space-y-3 mb-6">
           <Button 
             variant="outline" 
-            className="w-full text-[#0047AB]"
+            className="w-full"
             onClick={() => window.location.href = '/achievements'}
           >
             <Trophy className="w-4 h-4 mr-2" />
@@ -196,7 +196,7 @@ const Profile = () => {
 
           <Button 
             variant="outline" 
-            className="w-full text-[#0047AB]"
+            className="w-full"
             onClick={signOut}
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -238,7 +238,7 @@ const Profile = () => {
             <Button 
               variant="outline" 
               onClick={() => setShowResetDialog(false)}
-              className="flex-1 text-[#0047AB]"
+              className="flex-1"
             >
               No
             </Button>

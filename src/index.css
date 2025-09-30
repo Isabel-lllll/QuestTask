@@ -33,6 +33,12 @@ All colors MUST be HSL.
     --success: 158 64% 52%;  /* Green for completed tasks */
     --success-foreground: 0 0% 100%;
     
+    --royal-blue: 216 100% 34%;  /* Royal Blue #0047AB for unselected buttons */
+    --royal-blue-foreground: 0 0% 100%;
+    
+    --progress-purple: 280 100% 25%;  /* Purple #800080 for progress elements */
+    --progress-purple-foreground: 0 0% 100%;
+    
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
