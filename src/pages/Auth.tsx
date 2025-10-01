@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { User, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -41,23 +41,26 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Floating avatars background */}
+      {/* Floating colorful bubbles background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
+        {[
+          { color: 'bg-primary/20', size: 'w-24 h-24', left: '10%', top: '20%' },
+          { color: 'bg-accent/20', size: 'w-32 h-32', left: '80%', top: '10%' },
+          { color: 'bg-secondary/20', size: 'w-20 h-20', left: '15%', top: '70%' },
+          { color: 'bg-success/20', size: 'w-28 h-28', left: '85%', top: '75%' },
+          { color: 'bg-primary/15', size: 'w-16 h-16', left: '50%', top: '15%' },
+          { color: 'bg-accent/15', size: 'w-36 h-36', left: '45%', top: '80%' },
+        ].map((bubble, i) => (
           <div
             key={i}
-            className="absolute animate-float"
+            className={`absolute ${bubble.size} ${bubble.color} rounded-full backdrop-blur-sm animate-float`}
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + i}s`,
+              left: bubble.left,
+              top: bubble.top,
+              animationDelay: `${i * 0.7}s`,
+              animationDuration: `${4 + i * 0.5}s`,
             }}
-          >
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
-              <User className="w-8 h-8 text-white/50" />
-            </div>
-          </div>
+          />
         ))}
       </div>
 

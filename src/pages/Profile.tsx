@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { CustomAvatarDisplay } from "@/components/CustomAvatarDisplay";
 import { Navigation } from "@/components/Navigation";
 import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,14 @@ const Profile = () => {
     username: "",
     avatar_type: "upload" as "upload" | "custom",
     avatar_url: null as string | null,
+    avatar_hairstyle: "Short",
+    avatar_clothing: "Casual",
+    avatar_face_shape: "Round",
+    avatar_skin_tone: "Medium",
+    avatar_accessories: "None",
+    avatar_hair_color: "Brown",
+    avatar_clothing_color: "Blue",
+    avatar_accessory_color: "Black",
   });
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
@@ -50,6 +59,14 @@ const Profile = () => {
         username: data.username || "",
         avatar_type: (data.avatar_type as "upload" | "custom") || "upload",
         avatar_url: data.avatar_url || null,
+        avatar_hairstyle: data.avatar_hairstyle || "Short",
+        avatar_clothing: data.avatar_clothing || "Casual",
+        avatar_face_shape: data.avatar_face_shape || "Round",
+        avatar_skin_tone: data.avatar_skin_tone || "Medium",
+        avatar_accessories: data.avatar_accessories || "None",
+        avatar_hair_color: data.avatar_hair_color || "Brown",
+        avatar_clothing_color: data.avatar_clothing_color || "Blue",
+        avatar_accessory_color: data.avatar_accessory_color || "Black",
       });
     }
     setLoading(false);
@@ -118,7 +135,19 @@ const Profile = () => {
     if (!error) {
       toast.success("Avatar customized successfully!");
       setShowAvatarDialog(false);
-      setProfile({ ...profile, avatar_type: "custom", avatar_url: null });
+      setProfile({ 
+        ...profile, 
+        avatar_type: "custom", 
+        avatar_url: null,
+        avatar_hairstyle: options.hairstyle,
+        avatar_clothing: options.clothing,
+        avatar_face_shape: options.faceShape,
+        avatar_skin_tone: options.skinTone,
+        avatar_accessories: options.accessories,
+        avatar_hair_color: options.hairColor,
+        avatar_clothing_color: options.clothingColor,
+        avatar_accessory_color: options.accessoryColor,
+      });
     } else {
       toast.error("Failed to save avatar");
     }
@@ -145,12 +174,22 @@ const Profile = () => {
             className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold cursor-pointer overflow-hidden"
             onClick={() => setShowAvatarDialog(true)}
           >
-            {profile.avatar_url && profile.avatar_type === "upload" ? (
+            {profile.avatar_type === "upload" && profile.avatar_url ? (
               <img 
                 src={profile.avatar_url} 
                 alt="Profile" 
                 className="w-full h-full object-cover"
                 onError={() => handleAvatarUpdate(null)}
+              />
+            ) : profile.avatar_type === "custom" ? (
+              <CustomAvatarDisplay
+                hairstyle={profile.avatar_hairstyle}
+                hairColor={profile.avatar_hair_color}
+                skinTone={profile.avatar_skin_tone}
+                clothingColor={profile.avatar_clothing_color}
+                accessories={profile.avatar_accessories}
+                accessoryColor={profile.avatar_accessory_color}
+                size="md"
               />
             ) : (
               <User className="w-12 h-12 text-accent-foreground" />
@@ -164,17 +203,17 @@ const Profile = () => {
           <h1 className="font-serif text-3xl font-bold text-white mb-2">
             {profile.username}
           </h1>
-          <p className="text-white/80 mb-4">
+          <p className="text-white mb-4">
             Level {userProgress.level} • {userProgress.xp} XP earned
           </p>
           
           <div className="max-w-md mx-auto">
-            <div className="flex justify-between text-sm text-white/70 mb-2">
+            <div className="flex justify-between text-sm text-white mb-2">
               <span>Level Progress</span>
               <span>{levelProgress}%</span>
             </div>
             <Progress value={levelProgress} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">{levelProgress}/100 XP to next level</p>
+            <p className="text-xs text-white/90 mt-2">{levelProgress}/100 XP to next level</p>
           </div>
         </div>
 
@@ -290,7 +329,19 @@ const Profile = () => {
             </TabsContent>
             <TabsContent value="custom">
               <Suspense fallback={<div className="text-center p-8 text-muted-foreground">Loading customizer...</div>}>
-                <AvatarCustomizer onSave={handleSaveAvatar} />
+                <AvatarCustomizer 
+                  onSave={handleSaveAvatar}
+                  initialOptions={{
+                    hairstyle: profile.avatar_hairstyle,
+                    clothing: profile.avatar_clothing,
+                    faceShape: profile.avatar_face_shape,
+                    skinTone: profile.avatar_skin_tone,
+                    accessories: profile.avatar_accessories,
+                    hairColor: profile.avatar_hair_color,
+                    clothingColor: profile.avatar_clothing_color,
+                    accessoryColor: profile.avatar_accessory_color,
+                  }}
+                />
               </Suspense>
             </TabsContent>
           </Tabs>
