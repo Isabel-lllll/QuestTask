@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
-import { AvatarCustomizer } from "@/components/AvatarCustomizer";
+import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -9,6 +9,9 @@ import { User, Trophy, Flame, CheckCircle, Zap, AlertTriangle, LogOut, Upload } 
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+
+// Lazy load the avatar customizer for better performance
+const AvatarCustomizer = lazy(() => import("@/components/AvatarCustomizer").then(module => ({ default: module.AvatarCustomizer })));
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -22,6 +25,7 @@ const Profile = () => {
   const [profile, setProfile] = useState({
     username: "",
     avatar_type: "upload" as "upload" | "custom",
+    avatar_url: null as string | null,
   });
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
@@ -45,6 +49,7 @@ const Profile = () => {
       setProfile({
         username: data.username || "",
         avatar_type: (data.avatar_type as "upload" | "custom") || "upload",
+        avatar_url: data.avatar_url || null,
       });
     }
     setLoading(false);
@@ -113,13 +118,17 @@ const Profile = () => {
     if (!error) {
       toast.success("Avatar customized successfully!");
       setShowAvatarDialog(false);
-      setProfile({ ...profile, avatar_type: "custom" });
+      setProfile({ ...profile, avatar_type: "custom", avatar_url: null });
     } else {
       toast.error("Failed to save avatar");
     }
   };
 
   const levelProgress = (userProgress.xp % 100);
+
+  const handleAvatarUpdate = (url: string | null) => {
+    setProfile({ ...profile, avatar_url: url, avatar_type: "upload" });
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -133,10 +142,19 @@ const Profile = () => {
         {/* Profile Header */}
         <div className="bg-gradient-card rounded-xl p-8 mb-6 shadow-glow-purple text-center">
           <div 
-            className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold cursor-pointer"
+            className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold cursor-pointer overflow-hidden"
             onClick={() => setShowAvatarDialog(true)}
           >
-            <User className="w-12 h-12 text-accent-foreground" />
+            {profile.avatar_url && profile.avatar_type === "upload" ? (
+              <img 
+                src={profile.avatar_url} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+                onError={() => handleAvatarUpdate(null)}
+              />
+            ) : (
+              <User className="w-12 h-12 text-accent-foreground" />
+            )}
           </div>
           <Button variant="outline" size="sm" onClick={() => setShowAvatarDialog(true)} className="mb-4">
             <Upload className="w-4 h-4 mr-2" />
@@ -156,7 +174,7 @@ const Profile = () => {
               <span>{levelProgress}%</span>
             </div>
             <Progress value={levelProgress} className="h-2" />
-            <p className="text-xs text-white/60 mt-2">{levelProgress}/100 XP to next level</p>
+            <p className="text-xs text-muted-foreground mt-2">{levelProgress}/100 XP to next level</p>
           </div>
         </div>
 
@@ -265,15 +283,15 @@ const Profile = () => {
               <TabsTrigger value="custom">Customize Avatar</TabsTrigger>
             </TabsList>
             <TabsContent value="upload" className="space-y-4">
-              <div className="text-center p-8">
-                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground mb-4">
-                  Upload a profile picture (coming soon)
-                </p>
-              </div>
+              <ProfilePictureUpload 
+                currentAvatarUrl={profile.avatar_url} 
+                onAvatarUpdate={handleAvatarUpdate}
+              />
             </TabsContent>
             <TabsContent value="custom">
-              <AvatarCustomizer onSave={handleSaveAvatar} />
+              <Suspense fallback={<div className="text-center p-8 text-muted-foreground">Loading customizer...</div>}>
+                <AvatarCustomizer onSave={handleSaveAvatar} />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </DialogContent>
